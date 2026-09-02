@@ -32,3 +32,20 @@
 * **Etkileşim Özellikleri:** Etkinliklere yorum yapabilme, puan verme veya beğeni sistemi bulunmayacak.
 * **Anlık Bildirimler (Push Notifications):** Davet ve onay bildirimleri bu fazda (süre kısıtı nedeniyle) uygulanmayacak, sadece uygulama içi durum değişiklikleri ile yönetilecek.
 * **Ücretli Sistemler:** Bilet satışı veya herhangi bir ödeme altyapısı bulunmayacak.
+
+# 2. Technical Spec (Teknik Tasarım)
+
+## 2.1 Teknoloji Seçimleri ve Gerekçeleri
+
+* **Frontend (Mobil Platform):** React Native (Expo)
+  * *Gerekçe:* Önceki staj deneyimlerimden dolayı bu teknolojiye olan aşinalığım ve Expo'nun sunduğu hızlı prototipleme imkanı.
+* **Backend ve Veritabanı:** Firebase (Authentication & Cloud Firestore)
+  * *Gerekçe:* Daha önce PostgreSQL kullanmış olmama rağmen, 3 haftalık kısıtlı staj süresinde sıfırdan API ve sunucu altyapısıyla vakit kaybetmemek adına AI asistanımın tavsiyesiyle bu projede pratik bir çözüm olan Firebase'i seçtim.
+* **Navigasyon:** React Navigation
+  * *Gerekçe:* React Native ekosisteminde sayfalar arası geçiş (routing) için endüstri standardı olması.
+* **UI / Tasarım:** React Native StyleSheet
+  * *Gerekçe:* Önceki stajımda NativeWind/Tailwind yapılandırmasında bazı uyumsuzluk sorunları yaşamıştım. Kısıtlı sürede riske girmemek ve zaman kaybetmemek adına varsayılan StyleSheet yapısını kullanmaya karar verdim.
+* **Geliştirme ve Test Ortamı:** Android Studio (Emülatör)
+  * *Gerekçe:* Önceki stajımda da kullandığım için ortam kurulumuna ve kullanım süreçlerine hakim olmam.
+* **Versiyon Kontrol:** Git & GitHub
+  * *Gerekçe:* Kendi bireysel projelerimde halihazırda aktif olarak kullandığım için aşina olduğum, en yaygın sürüm kontrol sistemi olması.

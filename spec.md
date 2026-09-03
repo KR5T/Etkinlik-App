@@ -4,7 +4,7 @@
 
 * **Kayıt ve Giriş:** Bir kullanıcı olarak, uygulamaya kayıt olup giriş yapabilmek istiyorum, böylece etkinliklerimi kendi hesabım üzerinden güvenle yönetebilirim.
 * **Profil Yönetimi:** Bir kullanıcı olarak, kişisel profilimi (isim, avatar, kısa bilgi) oluşturup düzenleyebilmek istiyorum, böylece topluluktaki diğer insanlar beni tanıyabilir.
-* **Etkinlik Oluşturma:** Bir kullanıcı olarak, başlık, açıklama, tarih, saat ve konum bilgilerini girerek yeni bir etkinlik oluşturabilmek istiyorum, böylece katılımcılar buluşma detaylarını net bir şekilde öğrenebilir.
+* **Etkinlik Oluşturma:** Bir kullanıcı olarak; başlık, açıklama, tarih, saat ve konum bilgilerini girerek yeni bir etkinlik oluşturabilmek istiyorum, böylece katılımcılar buluşma detaylarını net bir şekilde öğrenebilir.
 * **Davet Etme:** Bir kullanıcı olarak etkinliğime link veya kod ile arkadaşlarımı davet edebiliyor olamılıyım ki arkadaşlarım etkinliğimden uygulama üzerinden haberleri olsun. 
 * **Etkinlik Arama** Bir kullanıcı olarak etkinlikleri net bir şekilde sıralayabilmeli, arayabilmeli ve de filteleyebilmeliyim. böylece bir etkinlik aradığım etkinlikleri rahatlıkla bulabileyim.
 * **Detayları Görebilme** Bir kullanıcı olarak etkinlik detaylarını görebilmeliyim. Böylece olası karmaşıklıkları önleyebilelim. 
@@ -49,3 +49,47 @@
   * *Gerekçe:* Önceki stajımda da kullandığım için ortam kurulumuna ve kullanım süreçlerine hakim olmam.
 * **Versiyon Kontrol:** Git & GitHub
   * *Gerekçe:* Kendi bireysel projelerimde halihazırda aktif olarak kullandığım için aşina olduğum, en yaygın sürüm kontrol sistemi olması.
+
+  ## 2.2 Veri Modeli (Data Model)
+
+  Veritabanı olarak Firebase (Firestore) kullanılacaktır. Sistemde iki ana koleksiyon (collection) bulunacaktır:
+
+  ### 1. Users Collection
+  Kullanıcı profil ve kimlik bilgilerini tutar.
+  * `id` (String) - Firebase Auth tarafından atanan benzersiz kullanıcı kimliği.
+  * `fullName` (String) - Kullanıcının adı ve soyadı.
+  * `email` (String) - Kayıtlı e-posta adresi.
+  * `bio` (String) - Kullanıcının kısa tanıtım yazısı (description).
+  * `avatarUrl` (String) - Profil resminin URL'si (MVP aşamasında hazır ikon linkleri kullanılacak).
+  * `createdAt` (Timestamp) - Hesabın oluşturulma tarihi.
+
+  ### 2. Events Collection
+  Oluşturulan etkinliklerin tüm detaylarını tutar.
+  * `id` (String) - Firestore tarafından atanan benzersiz etkinlik kimliği.
+  * `title` (String) - Etkinlik başlığı.
+  * `description` (String) - Etkinlik açıklaması.
+  * `date` (Timestamp) - Etkinliğin gerçekleşeceği tarih ve saat.
+  * `location` (String) - Etkinliğin konumu (MVP için metin tabanlı adres).
+  * `capacity` (Number) - Maksimum katılımcı sayısı (Opsiyonel alan).
+  * `creatorId` (String) - Etkinliği oluşturan kullanıcının ID'si (Users koleksiyonuna referans).
+  * `attendees` (Array of Strings) - Etkinliğe katılmayı onaylayan kullanıcıların ID listesi.
+  * `createdAt` (Timestamp) - Etkinliğin oluşturulma tarihi.
+
+  ## 2.3 Ekran Akışları (Screen Flows)
+
+  Uygulama temel olarak iki ana navigasyon yığınından (Stack) oluşacaktır:
+
+  ### 1. Auth Stack (Kimlik Doğrulama Öncesi)
+  Kullanıcı giriş yapmamışsa bu ekranlar gösterilir.
+  * **Login Screen:** E-posta ve şifre ile giriş sayfası.
+  * **Register Screen:** Yeni hesap oluşturma sayfası.
+
+  ### 2. Main Tab Navigator (Ana Akış)
+  Giriş yapmış kullanıcıların ekranın altında gördüğü 3'lü menü (Tab Bar) yapısı.
+  * **Tab 1: Keşfet (Home):** Tüm etkinliklerin listelendiği ve arama/filtreleme yapılabilen ana sayfa.
+  * **Tab 2: Yeni Etkinlik (Create):** Etkinlik oluşturma formunun bulunduğu sayfa.
+  * **Tab 3: Profil (Profile):** Kullanıcı bilgileri, etkinlik geçmişi, hesabı silme ve çıkış yapma seçeneklerinin bulunduğu sayfa.
+
+  ### 3. İç Ekranlar (Nested Screens)
+  Kullanıcının ana akıştaki bir öğeye tıklamasıyla açılan alt sayfalar.
+  * **Event Detail Screen:** Bir etkinliğe tıklandığında açılan detay sayfası. Katılma butonu, davet etme seçeneği ve katılımcı listesi bu ekranın içinde yer alır.

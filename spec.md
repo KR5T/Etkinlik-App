@@ -11,7 +11,7 @@
 * **Katılım İsteği Gönderme** Bir kullanıcı olarak istediğim etkinliklere istek gönderebilmeli veya doğrudan katılabilmeliyim. Böylece katılmak istediğim etkinliklerde, etkinlik sahibi geleceğimden emin olur. 
 * **Katılımdan Vazgeçme** Bir kullanıcı olarak katıldığım etkinliklerden vezgeçebiliyor olmalıyım. Böylece olası hatalardan veya gitmeyceğim etkinliklerden adımı sildirmeliyim ki karışıklıklara yol açmasın.
 * **Etkinlik Geçmişi** Bir kullanıcı olarak profilimden katıldığım veya oluşturduğum etkinlikleri profilimdeki etkinlik geçmişinden görebilmeliyim. Böylece katılımlarımı takip edebilmeli, hangi etkinlği ne zaman verdiğimi görebilmeliyim. 
-* **Bildirimler** Bir kullanıcı olarak uygulamadan bildirim almalıyım ki gelen davetleri, katılım onaylarını veya etkinlik hatırlatıcılarını görebileyim.
+* **Bildirim Kutusu** Bir kullanıcı olarak uygulamada bidirim kutusunu görmeliyim ki gelen davetleri, katılım onaylarını veya etkinlik hatırlatıcılarını görebileyim.
 * **Hesabı Silme** Bir kullanıcı olarak uygulamadan oluşturduğum hesabı silebilmeliyim. Böylece istediğim zaman uygulama ile ilişiğim kesilsin.
 * **Çıkış Yapma** Bir kullanıcı olarak hesaptan çıkış yapabilmeliyim ki hesap değiştireceğim zaman sorun olmasın. 
 
@@ -39,8 +39,8 @@
 
 * **Frontend (Mobil Platform):** React Native (Expo)
   * *Gerekçe:* Önceki staj deneyimlerimden dolayı bu teknolojiye olan aşinalığım ve Expo'nun sunduğu hızlı prototipleme imkanı.
-* **Backend ve Veritabanı:** Firebase (Authentication & Cloud Firestore)
-  * *Gerekçe:* Daha önce PostgreSQL kullanmış olmama rağmen, 3 haftalık kısıtlı staj süresinde sıfırdan API ve sunucu altyapısıyla vakit kaybetmemek adına AI asistanımın tavsiyesiyle bu projede pratik bir çözüm olan Firebase'i seçtim.
+* **Backend ve Veritabanı:** Supabase (PostgreSQL & Auth)
+  * *Gerekçe:* haftalık kısıtlı staj süresinde sıfırdan API ve sunucu altyapısıyla vakit kaybetmemek adına, amirimin de tavsiyesiyle hazır bir Backend-as-a-Service olan Supabase'i seçtim. Bu sayede ayrı bir dilde (Java/Node.js) backend yazmak zorunda kalmadan doğrudan güçlü bir ilişkisel veritabanı (PostgreSQL) kullanabileceğim.
 * **Navigasyon:** React Navigation
   * *Gerekçe:* React Native ekosisteminde sayfalar arası geçiş (routing) için endüstri standardı olması.
 * **UI / Tasarım:** React Native StyleSheet
@@ -50,30 +50,33 @@
 * **Versiyon Kontrol:** Git & GitHub
   * *Gerekçe:* Kendi bireysel projelerimde halihazırda aktif olarak kullandığım için aşina olduğum, en yaygın sürüm kontrol sistemi olması.
 
-  ## 2.2 Veri Modeli (Data Model)
+## 2.2 Veri Modeli (Data Model)
 
-  Veritabanı olarak Firebase (Firestore) kullanılacaktır. Sistemde iki ana koleksiyon (collection) bulunacaktır:
+Veritabanı olarak Supabase (PostgreSQL) kullanılacaktır. Sistemde ilişkisel (relational) mimariye uygun olarak 3 temel tablo bulunacaktır:
 
-  ### 1. Users Collection
-  Kullanıcı profil ve kimlik bilgilerini tutar.
-  * `id` (String) - Firebase Auth tarafından atanan benzersiz kullanıcı kimliği.
-  * `fullName` (String) - Kullanıcının adı ve soyadı.
-  * `email` (String) - Kayıtlı e-posta adresi.
-  * `bio` (String) - Kullanıcının kısa tanıtım yazısı (description).
-  * `avatarUrl` (String) - Profil resminin URL'si (MVP aşamasında hazır ikon linkleri kullanılacak).
-  * `createdAt` (Timestamp) - Hesabın oluşturulma tarihi.
+### 1. Users Tablosu
+* `id` (UUID, Primary Key) - Supabase Auth tarafından atanan benzersiz kimlik.
+* `full_name` (Varchar) - Kullanıcının adı ve soyadı.
+* `email` (Varchar) - Kayıtlı e-posta adresi.
+* `bio` (Text) - Kullanıcının kısa tanıtım yazısı.
+* `avatar_url` (Varchar) - Profil resminin URL'si.
+* `created_at` (Timestamp) - Hesabın oluşturulma tarihi.
 
-  ### 2. Events Collection
-  Oluşturulan etkinliklerin tüm detaylarını tutar.
-  * `id` (String) - Firestore tarafından atanan benzersiz etkinlik kimliği.
-  * `title` (String) - Etkinlik başlığı.
-  * `description` (String) - Etkinlik açıklaması.
-  * `date` (Timestamp) - Etkinliğin gerçekleşeceği tarih ve saat.
-  * `location` (String) - Etkinliğin konumu (MVP için metin tabanlı adres).
-  * `capacity` (Number) - Maksimum katılımcı sayısı (Opsiyonel alan).
-  * `creatorId` (String) - Etkinliği oluşturan kullanıcının ID'si (Users koleksiyonuna referans).
-  * `attendees` (Array of Strings) - Etkinliğe katılmayı onaylayan kullanıcıların ID listesi.
-  * `createdAt` (Timestamp) - Etkinliğin oluşturulma tarihi.
+### 2. Events Tablosu
+* `id` (UUID, Primary Key) - Etkinliğin benzersiz kimliği.
+* `title` (Varchar) - Etkinlik başlığı.
+* `description` (Text) - Etkinlik açıklaması.
+* `date` (Timestamp) - Etkinliğin gerçekleşeceği tarih ve saat.
+* `location` (Varchar) - Etkinliğin konumu.
+* `capacity` (Integer) - Maksimum katılımcı sayısı.
+* `creator_id` (UUID, Foreign Key -> Users.id) - Etkinliği oluşturan kullanıcının ID'si.
+* `created_at` (Timestamp) - Etkinliğin oluşturulma tarihi.
+
+### 3. Event_Attendees Tablosu (Junction Table)
+* `id` (UUID, Primary Key) - Kaydın benzersiz kimliği.
+* `event_id` (UUID, Foreign Key -> Events.id) - Katılınan etkinliğin ID'si.
+* `user_id` (UUID, Foreign Key -> Users.id) - Katılan kullanıcının ID'si.
+* `joined_at` (Timestamp) - Katılım işleminin gerçekleştiği tarih.
 
   ## 2.3 Ekran Akışları (Screen Flows)
 

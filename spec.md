@@ -77,6 +77,10 @@ Veritabanı olarak Supabase (PostgreSQL) kullanılacaktır. Sistemde ilişkisel 
 * `event_id` (UUID, Foreign Key -> Events.id) - Katılınan etkinliğin ID'si.
 * `user_id` (UUID, Foreign Key -> Users.id) - Katılan kullanıcının ID'si.
 * `joined_at` (Timestamp) - Katılım işleminin gerçekleştiği tarih.
+### ER Diyagramı
+![ER Diyagramı](./assets/images/EtkinlikAppER.PNG)
+### Veri Tabanı Şeması
+![Veri Tabanı Şeması](./assets/images/EtkinlikAppDBS.PNG)
 
   ## 2.3 Ekran Akışları (Screen Flows)
 

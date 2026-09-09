@@ -22,7 +22,7 @@ export default function RegisterScreen() {
       email,
       password,
       options: {
-        data: { full_name: fullName }
+        data: { full_name: fullName.trim() }
       }
     });
 

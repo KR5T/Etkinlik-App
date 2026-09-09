@@ -41,8 +41,8 @@
   * *Gerekçe:* Önceki staj deneyimlerimden dolayı bu teknolojiye olan aşinalığım ve Expo'nun sunduğu hızlı prototipleme imkanı.
 * **Backend ve Veritabanı:** Supabase (PostgreSQL & Auth)
   * *Gerekçe:* haftalık kısıtlı staj süresinde sıfırdan API ve sunucu altyapısıyla vakit kaybetmemek adına, amirimin de tavsiyesiyle hazır bir Backend-as-a-Service olan Supabase'i seçtim. Bu sayede ayrı bir dilde (Java/Node.js) backend yazmak zorunda kalmadan doğrudan güçlü bir ilişkisel veritabanı (PostgreSQL) kullanabileceğim.
-* **Navigasyon:** React Navigation
-  * *Gerekçe:* React Native ekosisteminde sayfalar arası geçiş (routing) için endüstri standardı olması.
+* **Navigasyon:** Expo Router
+  * *Gerekçe:* React Native Expo ekosisteminde sayfalar arası geçiş (routing) için endüstri standardı olması.
 * **UI / Tasarım:** React Native StyleSheet
   * *Gerekçe:* Önceki stajımda NativeWind/Tailwind yapılandırmasında bazı uyumsuzluk sorunları yaşamıştım. Kısıtlı sürede riske girmemek ve zaman kaybetmemek adına varsayılan StyleSheet yapısını kullanmaya karar verdim.
 * **Geliştirme ve Test Ortamı:** Android Studio (Emülatör)

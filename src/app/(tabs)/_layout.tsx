@@ -1,3 +1,5 @@
+import Entypo from '@expo/vector-icons/Entypo';
+import FontAwesome6 from '@expo/vector-icons/FontAwesome6';
 import { Tabs } from 'expo-router';
 
 export default function TabLayout() {
@@ -13,6 +15,7 @@ export default function TabLayout() {
         options={{
           title: 'Keşfet',
           tabBarLabel: 'Keşfet',
+          tabBarIcon: ({ color }) => <Entypo name="magnifying-glass" size={24} color="grey" />
         }}
       />
 
@@ -21,6 +24,7 @@ export default function TabLayout() {
         options={{
           title: 'Yeni Etkinlik',
           tabBarLabel: 'Oluştur',
+          tabBarIcon: ({ color }) => <Entypo name="squared-plus" size={24} color="grey" />
         }}
       />
 
@@ -29,6 +33,7 @@ export default function TabLayout() {
         options={{
           title: 'Profil',
           tabBarLabel: 'Profil',
+          tabBarIcon: ({ color }) => <FontAwesome6 name="user-large" size={24} color="grey" />
         }}
       />
     </Tabs>

@@ -9,6 +9,7 @@ export default function ProfileScreen() {
   const [loading, setLoading] = useState(true);
   const [profile, setProfile] = useState<any>(null);
   const [createdEvents, setCreatedEvents] = useState<any[]>([]);
+  const [joinedEvents, setJoinedEvents] = useState<any[]>([]);
   
   // Accordion durumlarını tutan stateler
   const [isCreatedOpen, setIsCreatedOpen] = useState(false);
@@ -42,8 +43,22 @@ export default function ProfileScreen() {
 
       if (!eventsError) setCreatedEvents(eventsData || []);
 
-      // Katıldığım etkinlikler verisi (attendees tablosu hazır olduğunda buraya eklenecek)
-      // Şimdilik sadece oluşturduklarını listeliyoruz.
+      // 4. Katıldığım etkinlikleri çek (attendees tablosundan event detaylarıyla birlikte)
+      const { data: joinedData, error: joinedError } = await supabase
+        .from('attendees')
+        .select(`
+          event_id,
+          events ( * )
+        `)
+        .eq('user_id', user.id);
+
+      if (!joinedError && joinedData) {
+        // Gelen karmaşık veriyi temiz bir diziye dönüştürüyoruz
+        const formattedJoinedEvents = joinedData
+          .map(item => item.events)
+          .filter(e => e !== null); // Boş gelenleri temizle
+        setJoinedEvents(formattedJoinedEvents);
+      }
 
     } catch (error) {
       console.error('Profil yüklenirken hata:', error);
@@ -140,7 +155,20 @@ export default function ProfileScreen() {
         
         {isJoinedOpen && (
           <View style={styles.accordionContent}>
-            <Text style={styles.emptyText}>Katılım verileri yakında eklenecek.</Text>
+            {joinedEvents.length > 0 ? (
+              joinedEvents.map((event: any) => (
+                <TouchableOpacity 
+                  key={event.event_id} 
+                  style={styles.eventItem}
+                  onPress={() => router.push(`/event/${event.event_id}`)}
+                >
+                  <Text style={styles.eventTitle}>{event.title}</Text>
+                  <Text style={styles.eventDate}>{formatDate(event.date)}</Text>
+                </TouchableOpacity>
+              ))
+            ) : (
+              <Text style={styles.emptyText}>Henüz hiçbir etkinliğe katılmadın.</Text>
+            )}
           </View>
         )}
       </View>

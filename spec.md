@@ -77,10 +77,19 @@ Veritabanı olarak Supabase (PostgreSQL) kullanılacaktır. Sistemde ilişkisel 
 * `event_id` (UUID, Foreign Key -> Events.id) - Katılınan etkinliğin ID'si.
 * `user_id` (UUID, Foreign Key -> Users.id) - Katılan kullanıcının ID'si.
 * `joined_at` (Timestamp) - Katılım işleminin gerçekleştiği tarih.
+
+### 4. Event_Invitations Tablosu
+* `id` (UUID, Primary Key) - Davetin benzersiz kimliği.
+* `event_id` (UUID, Foreign Key -> Events.id) - Davet edilen etkinliğin ID'si.
+* `inviter_id` (UUID, Foreign Key -> Users.id) - Daveti gönderen kullanıcının ID'si.
+* `invitee_id` (UUID, Foreign Key -> Users.id) - Daveti alan (davet edilen) kullanıcının ID'si.
+* `status` (Varchar) - Davet durumu ('pending', 'accepted', 'rejected').
+* `created_at` (Timestamp) - Davetin oluşturulma tarihi.
+
 ### ER Diyagramı
-![ER Diyagramı](./assets/images/EtkinlikAppER.PNG)
+![ER Diyagramı](./assets/images/etkinlikAppER(1.1).PNG)
 ### Veri Tabanı Şeması
-![Veri Tabanı Şeması](./assets/images/EtkinlikAppDBS.PNG)
+![Veri Tabanı Şeması](./assets/images/etkinlikAppDBScheme(1.1).PNG)
 
   ## 2.3 Ekran Akışları (Screen Flows)
 
@@ -100,3 +109,5 @@ Veritabanı olarak Supabase (PostgreSQL) kullanılacaktır. Sistemde ilişkisel 
   ### 3. İç Ekranlar (Nested Screens)
   Kullanıcının ana akıştaki bir öğeye tıklamasıyla açılan alt sayfalar.
   * **Event Detail Screen:** Bir etkinliğe tıklandığında açılan detay sayfası. Katılma butonu, davet etme seçeneği ve katılımcı listesi bu ekranın içinde yer alır.
+  * **Notifications Screen:** "Keşfet" (Home) ekranının sağ üst köşesindeki bildirim ziline tıklanınca açılan iç ekran. Kullanıcıya gelen etkinlik davetlerini listeler. Kullanıcı buradan davetleri "Onayla" (kabul) veya "Reddet" aksiyonları ile yönetebilir.
+  * **Invite Users Modal:** Etkinlik detay sayfasından açılan, sistemdeki diğer kullanıcıları arayıp (isim veya e-posta ile) etkinliğe davet göndermeye yarayan arayüz.

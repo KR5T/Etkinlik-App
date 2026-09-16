@@ -52,8 +52,8 @@ export default function HomeScreen() {
   // Listedeki her bir etkinlik kartının tasarımı
   const renderEventItem = ({ item }: { item: any }) => (
     <TouchableOpacity 
-    onPress={() => router.push(`../event/${item.event_id}`)}
-    style={styles.card}>
+      onPress={() => router.push(`../event/${item.event_id}`)}
+      style={styles.card}>
       <Text style={styles.title}>{item.title}</Text>
 
       <View style={styles.infoRow}>
@@ -84,7 +84,16 @@ export default function HomeScreen() {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.headerTitle}>Yaklaşan Etkinlikler</Text>
+      {/* ÜST KISIM: Başlık ve Bildirim Zili */}
+      <View style={styles.headerRow}>
+        <Text style={styles.headerTitle}>Yaklaşan Etkinlikler</Text>
+        <TouchableOpacity 
+          onPress={() => router.push('/notifications')} 
+          style={styles.iconButton}
+        >
+          <Ionicons name="notifications-outline" size={24} color="#333" />
+        </TouchableOpacity>
+      </View>
       
       <FlatList
         data={events}
@@ -107,7 +116,23 @@ export default function HomeScreen() {
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#f5f5f5' },
   centered: { flex: 1, justifyContent: 'center', alignItems: 'center' },
-  headerTitle: { fontSize: 24, fontWeight: 'bold', margin: 20, color: '#333' },
+  
+  // Yeni eklenen Header Container stilleri
+  headerRow: { 
+    flexDirection: 'row', 
+    justifyContent: 'space-between', 
+    alignItems: 'center', 
+    marginHorizontal: 20, 
+    marginTop: 20,
+    marginBottom: 10
+  },
+  headerTitle: { fontSize: 24, fontWeight: 'bold', color: '#333' },
+  iconButton: {
+    padding: 8,
+    backgroundColor: '#e0e0e0',
+    borderRadius: 20,
+  },
+
   listContainer: { paddingHorizontal: 15, paddingBottom: 20 },
   card: {
     backgroundColor: '#fff',

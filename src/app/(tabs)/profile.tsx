@@ -81,6 +81,37 @@ export default function ProfileScreen() {
     ]);
   };
 
+  // YENİ: Hesabı Silme Fonksiyonu
+  const handleDeleteAccount = () => {
+    Alert.alert(
+      "Hesabı Sil",
+      "Hesabını ve tüm verilerini (oluşturduğun etkinlikler dahil) kalıcı olarak silmek istediğine emin misin? Bu işlem geri alınamaz.",
+      [
+        { text: "İptal", style: "cancel" },
+        { 
+          text: "Evet, Sil", 
+          style: "destructive", 
+          onPress: async () => {
+            try {
+              // 1. Supabase'deki RPC fonksiyonumuzu tetikle
+              const { error } = await supabase.rpc('delete_user');
+              if (error) throw error;
+              
+              // 2. Local oturumu kapat
+              await supabase.auth.signOut();
+              
+              // 3. Kullanıcıyı Login ekranına şutla
+              router.replace('/login');
+            } catch (error: any) {
+              Alert.alert("Hata", "Hesap silinirken bir sorun oluştu.");
+              console.error(error.message);
+            }
+          }
+        }
+      ]
+    );
+  };
+
   const formatDate = (dateString: string) => {
     if (!dateString) return '';
     const date = new Date(dateString);
@@ -103,7 +134,7 @@ export default function ProfileScreen() {
         <View style={styles.avatarCircle}>
           <Ionicons name="person" size={50} color="#fff" />
         </View>
-        <Text style={styles.name}>{profile?.full_name || 'Mehmet Kürşat Sakarya'}</Text>
+        <Text style={styles.name}>{profile?.full_name || 'Kullanıcı'}</Text>
         <Text style={styles.email}>{profile?.email}</Text>
       </View>
 
@@ -140,7 +171,7 @@ export default function ProfileScreen() {
         )}
       </View>
 
-      {/* Accordion 2: Katıldığım Etkinlikler (Gelecek adım için hazır iskelet) */}
+      {/* Accordion 2: Katıldığım Etkinlikler */}
       <View style={styles.accordionContainer}>
         <TouchableOpacity 
           style={styles.accordionHeader} 
@@ -148,7 +179,7 @@ export default function ProfileScreen() {
         >
           <View style={styles.accordionTitleRow}>
             <Ionicons name="checkmark-circle-outline" size={24} color="#28a745" />
-            <Text style={styles.accordionTitle}>Katıldığım Etkinlikler</Text>
+            <Text style={styles.accordionTitle}>Katıldığım Etkinlikler ({joinedEvents.length})</Text>
           </View>
           <Ionicons name={isJoinedOpen ? "chevron-up" : "chevron-down"} size={24} color="#555" />
         </TouchableOpacity>
@@ -179,6 +210,12 @@ export default function ProfileScreen() {
         <Text style={styles.logoutText}>Çıkış Yap</Text>
       </TouchableOpacity>
 
+      {/* Hesabı Sil Butonu */}
+      <TouchableOpacity style={styles.deleteButton} onPress={handleDeleteAccount}>
+        <Ionicons name="trash-outline" size={22} color="#dc3545" style={{ marginRight: 8 }} />
+        <Text style={styles.deleteText}>Hesabı Sil</Text>
+      </TouchableOpacity>
+
     </ScrollView>
   );
 }
@@ -203,6 +240,10 @@ const styles = StyleSheet.create({
   eventDate: { fontSize: 14, color: '#888' },
   emptyText: { color: '#888', fontStyle: 'italic', marginTop: 10 },
   
-  logoutButton: { flexDirection: 'row', backgroundColor: '#dc3545', marginHorizontal: 20, marginTop: 20, paddingVertical: 15, borderRadius: 12, justifyContent: 'center', alignItems: 'center', elevation: 2, shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.2, shadowRadius: 2 },
-  logoutText: { color: '#fff', fontSize: 18, fontWeight: 'bold' }
+  logoutButton: { flexDirection: 'row', backgroundColor: '#6c757d', marginHorizontal: 20, marginTop: 20, paddingVertical: 15, borderRadius: 12, justifyContent: 'center', alignItems: 'center', elevation: 2, shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.2, shadowRadius: 2 },
+  logoutText: { color: '#fff', fontSize: 18, fontWeight: 'bold' },
+
+  // Yeni Hesabı Sil Butonu Stilleri
+  deleteButton: { flexDirection: 'row', backgroundColor: 'transparent', marginHorizontal: 20, marginTop: 15, paddingVertical: 15, borderRadius: 12, justifyContent: 'center', alignItems: 'center', borderWidth: 1, borderColor: '#dc3545' },
+  deleteText: { color: '#dc3545', fontSize: 18, fontWeight: 'bold' }
 });

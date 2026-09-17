@@ -1,56 +1,37 @@
-# Welcome to your Expo app 👋
+# EtkinlikApp 🎉
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+Sosyal topluluklar için geliştirilmiş, kullanıcıların kendi etkinliklerini oluşturabileceği, yeni etkinlikler keşfedip katılabileceği ve arkadaşlarını davet edebileceği yeni nesil mobil etkinlik uygulaması. 
 
-## Get started
+Bu proje, "Spec-Driven Development" (Spesifikasyon Odaklı Geliştirme) yaklaşımı kullanılarak baştan uca tasarlanmış ve kodlanmıştır.
 
-1. Install dependencies
+## 📱 Ekran Görüntüleri
 
-   ```bash
-   npm install
-   ```
+| Giriş Ekranı | Giriş Yap Ekranı | Kayıt Ekranı | Keşfet |
+| :---: | :---: | :---: | :---: |
+| ![Giriş Ekranı](./assets/images/GirisEkrani.PNG) | ![Giriş Yap Ekranı](./assets/images/GirişYapEkranı.PNG) | ![Kayıt Ekranı](./assets/images/KaydolEkranı.PNG) | ![Keşfet](././assets/images/KeşfetEkranı.PNG) |
 
-2. Start the app
+| Etkinlik Oluşturma Ekranı | Profil Ekranı | Bildirimler Ekranı | 
+| :---: | :---: | :---: | 
+| ![Etkinlik Oluşturma Ekranı](./assets/images/EtkinlikOluşturEkranı.PNG) | ![Profil Ekranı](./assets/images/ProfilEkranı.PNG) | ![Bildirimler Ekranı](./assets/images/BildirimlerEkranı.PNG)|
 
-   ```bash
-   npx expo start
-   ```
+| Buluşma Detayları | Davet Ekranı |  Ekranı | 
+| :---: | :---: | :---: | 
+| ![Buluşma Detayları](./assets/images/BuluşmaDetayları.PNG) | ![Davet Ekranı](./assets/images/DavetEtEkranı.PNG) | ![Bildirimler Ekranı](./assets/images/EtkinliğeKatıl.PNG)|
 
-In the output, you'll find options to open the app in a
 
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
 
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
+## ✨ Temel Özellikler
 
-## Get a fresh project
+* **Kimlik Doğrulama:** Supabase Auth ile güvenli e-posta ve şifre kayıt/giriş işlemleri.
+* **Etkinlik Yönetimi:** Yeni etkinlik oluşturma, kapasite, tarih ve konum belirleme.
+* **Keşfet & Katıl:** Yaklaşan etkinlikleri listeleme ve tek tıkla katılım sağlama.
+* **Davet Sistemi:** Sistemdeki diğer kullanıcıları arama ve etkinliklere özel davet gönderme.
+* **Bildirimler:** Gelen davetleri uygulama içi bildirim zili ve rozet (badge) sistemiyle takip edip kabul veya reddetme.
+* **Profil Yönetimi:** Kişiselleştirilebilir biyografi, oluşturulan ve katılım sağlanan etkinliklerin geçmişi, hesap silme.
 
-When you're ready, run:
+## 🛠️ Kullanılan Teknolojiler
 
-```bash
-npm run reset-project
-```
-
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
-
-### Other setup steps
-
-- To set up ESLint for linting, run `npx expo lint`, or follow our guide on ["Using ESLint and Prettier"](https://docs.expo.dev/guides/using-eslint/)
-- If you'd like to set up unit testing, follow our guide on ["Unit Testing with Jest"](https://docs.expo.dev/develop/unit-testing/)
-- Learn more about the TypeScript setup in this template in our guide on ["Using TypeScript"](https://docs.expo.dev/guides/typescript/)
-
-## Learn more
-
-To learn more about developing your project with Expo, look at the following resources:
-
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
-
-## Join the community
-
-Join our community of developers creating universal apps.
-
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+* **Frontend (Mobil):** React Native, Expo, Expo Router
+* **Backend & Veritabanı:** Supabase (PostgreSQL)
+* **Güvenlik:** Row Level Security (RLS)
+* **Tasarım:** React Native StyleSheet, Ionicons

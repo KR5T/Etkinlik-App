@@ -1,6 +1,6 @@
 import { Ionicons } from '@expo/vector-icons';
-import { useRouter } from 'expo-router';
-import { useEffect, useState } from 'react';
+import { useFocusEffect, useRouter } from 'expo-router';
+import { useCallback, useEffect, useState } from 'react';
 import { ActivityIndicator, FlatList, RefreshControl, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { supabase } from '../../../supabase';
 
@@ -8,15 +8,15 @@ export default function HomeScreen() {
   const [events, setEvents] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  const [unreadCount, setUnreadCount] = useState(0); // YENİ: Bildirim sayısı state'i
   const router = useRouter();
 
-  // Veri tabanından etkinlikleri çeken fonksiyon
   const fetchEvents = async () => {
     try {
       const { data, error } = await supabase
         .from('events')
         .select('*')
-        .order('date', { ascending: true }); // Tarihi yakın olana göre sırala
+        .order('date', { ascending: true });
 
       if (error) {
         console.error('Etkinlikler çekilirken hata:', error.message);
@@ -31,25 +31,50 @@ export default function HomeScreen() {
     }
   };
 
+  // YENİ: Okunmamış (bekleyen) davet sayısını çeken fonksiyon
+  const fetchUnreadCount = async () => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      const { count, error } = await supabase
+        .from('event_invitations')
+        .select('*', { count: 'exact', head: true }) // Sadece sayıyı (count) getirir, veriyi indirmez (Çok hızlıdır)
+        .eq('user_id', user.id)
+        .eq('status', 'pending');
+
+      if (!error && count !== null) {
+        setUnreadCount(count);
+      }
+    } catch (error) {
+      console.error("Bildirim sayısı çekilirken hata:", error);
+    }
+  };
+
   // Sayfa ilk açıldığında etkinlikleri getir
   useEffect(() => {
     fetchEvents();
   }, []);
 
-  // Kullanıcı ekranı yukarıdan aşağı çektiğinde çalışacak fonksiyon
+  // YENİ: Kullanıcı bu sekmeye her geri döndüğünde bildirim sayısını güncelle
+  useFocusEffect(
+    useCallback(() => {
+      fetchUnreadCount();
+    }, [])
+  );
+
   const onRefresh = () => {
     setRefreshing(true);
     fetchEvents();
+    fetchUnreadCount(); // Yenilerken bildirimleri de tazele
   };
 
-  // Supabase'den gelen Amerikan tarihini (YYYY-MM-DD) bizim formata (DD.MM.YYYY) çevirir
   const formatDate = (dateString: string) => {
     if (!dateString) return '';
     const date = new Date(dateString);
     return date.toLocaleDateString('tr-TR') + ' ' + date.toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' });
   };
 
-  // Listedeki her bir etkinlik kartının tasarımı
   const renderEventItem = ({ item }: { item: any }) => (
     <TouchableOpacity 
       onPress={() => router.push(`../event/${item.event_id}`)}
@@ -73,7 +98,6 @@ export default function HomeScreen() {
     </TouchableOpacity>
   );
 
-  // Veriler yüklenirken dönecek çember (Spinner)
   if (loading) {
     return (
       <View style={styles.centered}>
@@ -84,14 +108,22 @@ export default function HomeScreen() {
 
   return (
     <View style={styles.container}>
-      {/* ÜST KISIM: Başlık ve Bildirim Zili */}
       <View style={styles.headerRow}>
         <Text style={styles.headerTitle}>Yaklaşan Etkinlikler</Text>
+        
+        {/* BİLDİRİM ZİLİ VE ROZET (BADGE) */}
         <TouchableOpacity 
           onPress={() => router.push('/notifications')} 
           style={styles.iconButton}
         >
           <Ionicons name="notifications-outline" size={24} color="#333" />
+          
+          {/* Eğer okunmamış bildirim varsa kırmızı daireyi göster */}
+          {unreadCount > 0 && (
+            <View style={styles.badge}>
+              <Text style={styles.badgeText}>{unreadCount}</Text>
+            </View>
+          )}
         </TouchableOpacity>
       </View>
       
@@ -100,11 +132,9 @@ export default function HomeScreen() {
         keyExtractor={(item) => item.event_id}
         renderItem={renderEventItem}
         contentContainerStyle={styles.listContainer}
-        // Aşağı çekerek yenileme mekanizması
         refreshControl={
           <RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={['#ff6b6b']} />
         }
-        // Eğer veritabanı boşsa görünecek mesaj
         ListEmptyComponent={
           <Text style={styles.emptyText}>Henüz hiç etkinlik yok. İlk oluşturan sen ol!</Text>
         }
@@ -117,7 +147,6 @@ const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#f5f5f5' },
   centered: { flex: 1, justifyContent: 'center', alignItems: 'center' },
   
-  // Yeni eklenen Header Container stilleri
   headerRow: { 
     flexDirection: 'row', 
     justifyContent: 'space-between', 
@@ -131,6 +160,28 @@ const styles = StyleSheet.create({
     padding: 8,
     backgroundColor: '#e0e0e0',
     borderRadius: 20,
+    position: 'relative', // Rozetin (badge) zilin üzerine oturması için gerekli
+  },
+  
+  // YENİ: Kırmızı Rozet Tasarımı
+  badge: {
+    position: 'absolute',
+    right: 0,
+    top: 0,
+    backgroundColor: '#ff4757', // Şık bir kırmızı
+    borderRadius: 10,
+    minWidth: 18,
+    height: 18,
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 1.5,
+    borderColor: '#e0e0e0', // Arka planla uyumlu çerçeve
+  },
+  badgeText: {
+    color: '#fff',
+    fontSize: 10,
+    fontWeight: 'bold',
+    paddingHorizontal: 4,
   },
 
   listContainer: { paddingHorizontal: 15, paddingBottom: 20 },
@@ -139,8 +190,8 @@ const styles = StyleSheet.create({
     padding: 15,
     borderRadius: 12,
     marginBottom: 15,
-    elevation: 3, // Android gölge
-    shadowColor: '#000', // iOS gölge
+    elevation: 3, 
+    shadowColor: '#000', 
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 4,

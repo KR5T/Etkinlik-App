@@ -1,7 +1,7 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
-import { ActivityIndicator, Alert, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { ActivityIndicator, Alert, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { supabase } from '../../../supabase';
 
 export default function ProfileScreen() {
@@ -12,8 +12,13 @@ export default function ProfileScreen() {
   const [joinedEvents, setJoinedEvents] = useState<any[]>([]);
   
   // Accordion durumlarını tutan stateler
+  const [isBioOpen, setIsBioOpen] = useState(false);
   const [isCreatedOpen, setIsCreatedOpen] = useState(false);
   const [isJoinedOpen, setIsJoinedOpen] = useState(false);
+
+  // Bio Düzenleme Stateleri
+  const [isEditingBio, setIsEditingBio] = useState(false);
+  const [bioText, setBioText] = useState('');
 
   useEffect(() => {
     fetchUserData();
@@ -21,20 +26,20 @@ export default function ProfileScreen() {
 
   const fetchUserData = async () => {
     try {
-      // 1. O anki aktif kullanıcıyı al
       const { data: { user }, error: authError } = await supabase.auth.getUser();
       if (authError || !user) throw authError;
 
-      // 2. Kullanıcının kendi tablomuzdaki profil verisini çek
       const { data: profileData, error: profileError } = await supabase
         .from('users')
         .select('*')
         .eq('user_id', user.id)
         .single();
       
-      if (!profileError) setProfile(profileData);
+      if (!profileError) {
+        setProfile(profileData);
+        setBioText(profileData.bio || ''); 
+      }
 
-      // 3. Kullanıcının oluşturduğu etkinlikleri çek
       const { data: eventsData, error: eventsError } = await supabase
         .from('events')
         .select('*')
@@ -43,7 +48,6 @@ export default function ProfileScreen() {
 
       if (!eventsError) setCreatedEvents(eventsData || []);
 
-      // 4. Katıldığım etkinlikleri çek (attendees tablosundan event detaylarıyla birlikte)
       const { data: joinedData, error: joinedError } = await supabase
         .from('attendees')
         .select(`
@@ -53,10 +57,20 @@ export default function ProfileScreen() {
         .eq('user_id', user.id);
 
       if (!joinedError && joinedData) {
-        // Gelen karmaşık veriyi temiz bir diziye dönüştürüyoruz
+        // KURŞUN GEÇİRMEZ (BULLETPROOF) VERİ AYIKLAMA
         const formattedJoinedEvents = joinedData
-          .map(item => item.events)
-          .filter(e => e !== null); // Boş gelenleri temizle
+          .map(item => {
+            // Supabase dizi dönerse ilk elemanı al, obje dönerse kendisini al
+            let evt = Array.isArray(item.events) ? item.events[0] : item.events;
+            
+            // Eğer event bulunduysa, asıl item.event_id'yi de içine garanti olarak ekle
+            if (evt) {
+              evt.event_id = item.event_id || evt.event_id;
+            }
+            return evt;
+          })
+          .filter(e => e !== null && e !== undefined); 
+          
         setJoinedEvents(formattedJoinedEvents);
       }
 
@@ -64,6 +78,27 @@ export default function ProfileScreen() {
       console.error('Profil yüklenirken hata:', error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleSaveBio = async () => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      const { error } = await supabase
+        .from('users')
+        .update({ bio: bioText })
+        .eq('user_id', user.id);
+
+      if (error) throw error;
+
+      setProfile({ ...profile, bio: bioText });
+      setIsEditingBio(false);
+      Alert.alert("Başarılı", "Biyografin güncellendi.");
+    } catch (error) {
+      console.error(error);
+      Alert.alert("Hata", "Biyografi kaydedilirken bir sorun oluştu.");
     }
   };
 
@@ -75,13 +110,12 @@ export default function ProfileScreen() {
         style: 'destructive',
         onPress: async () => {
           await supabase.auth.signOut();
-          router.replace('/login'); // Çıkış yapınca giriş ekranına yolla
+          router.replace('/login'); 
         }
       }
     ]);
   };
 
-  // YENİ: Hesabı Silme Fonksiyonu
   const handleDeleteAccount = () => {
     Alert.alert(
       "Hesabı Sil",
@@ -93,14 +127,10 @@ export default function ProfileScreen() {
           style: "destructive", 
           onPress: async () => {
             try {
-              // 1. Supabase'deki RPC fonksiyonumuzu tetikle
               const { error } = await supabase.rpc('delete_user');
               if (error) throw error;
               
-              // 2. Local oturumu kapat
               await supabase.auth.signOut();
-              
-              // 3. Kullanıcıyı Login ekranına şutla
               router.replace('/login');
             } catch (error: any) {
               Alert.alert("Hata", "Hesap silinirken bir sorun oluştu.");
@@ -113,7 +143,7 @@ export default function ProfileScreen() {
   };
 
   const formatDate = (dateString: string) => {
-    if (!dateString) return '';
+    if (!dateString || typeof dateString !== 'string') return '';
     const date = new Date(dateString);
     return date.toLocaleDateString('tr-TR');
   };
@@ -129,7 +159,6 @@ export default function ProfileScreen() {
   return (
     <ScrollView style={styles.container} contentContainerStyle={{ paddingBottom: 40 }}>
       
-      {/* Üst Profil Kartı */}
       <View style={styles.profileHeader}>
         <View style={styles.avatarCircle}>
           <Ionicons name="person" size={50} color="#fff" />
@@ -138,7 +167,63 @@ export default function ProfileScreen() {
         <Text style={styles.email}>{profile?.email}</Text>
       </View>
 
-      {/* Accordion 1: Oluşturduğum Etkinlikler */}
+      <View style={styles.accordionContainer}>
+        <TouchableOpacity 
+          style={styles.accordionHeader} 
+          onPress={() => setIsBioOpen(!isBioOpen)}
+        >
+          <View style={styles.accordionTitleRow}>
+            <Ionicons name="information-circle-outline" size={24} color="#17a2b8" />
+            <Text style={styles.accordionTitle}>Biyografim</Text>
+          </View>
+          <Ionicons name={isBioOpen ? "chevron-up" : "chevron-down"} size={24} color="#555" />
+        </TouchableOpacity>
+        
+        {isBioOpen && (
+          <View style={styles.accordionContent}>
+            {isEditingBio ? (
+              <View>
+                <TextInput
+                  style={styles.bioInput}
+                  multiline
+                  numberOfLines={4}
+                  value={bioText}
+                  onChangeText={setBioText}
+                  placeholder="Kendinden kısaca bahset..."
+                />
+                <View style={styles.bioActionRow}>
+                  <TouchableOpacity 
+                    style={styles.bioCancelBtn} 
+                    onPress={() => {
+                      setIsEditingBio(false);
+                      setBioText(profile?.bio || ''); 
+                    }}
+                  >
+                    <Text style={styles.bioCancelText}>İptal</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity style={styles.bioSaveBtn} onPress={handleSaveBio}>
+                    <Text style={styles.bioSaveText}>Kaydet</Text>
+                  </TouchableOpacity>
+                </View>
+              </View>
+            ) : (
+              <View>
+                <Text style={styles.bioTextContent}>
+                  {profile?.bio || 'Henüz bir biyografi eklenmemiş.'}
+                </Text>
+                <TouchableOpacity 
+                  style={styles.bioEditBtn} 
+                  onPress={() => setIsEditingBio(true)}
+                >
+                  <Ionicons name="pencil" size={16} color="#007bff" />
+                  <Text style={styles.bioEditText}>Düzenle</Text>
+                </TouchableOpacity>
+              </View>
+            )}
+          </View>
+        )}
+      </View>
+
       <View style={styles.accordionContainer}>
         <TouchableOpacity 
           style={styles.accordionHeader} 
@@ -154,14 +239,14 @@ export default function ProfileScreen() {
         {isCreatedOpen && (
           <View style={styles.accordionContent}>
             {createdEvents.length > 0 ? (
-              createdEvents.map((event) => (
+              createdEvents.map((event, index) => (
                 <TouchableOpacity 
-                  key={event.event_id} 
+                  key={event?.event_id || `created-${index}`} 
                   style={styles.eventItem}
                   onPress={() => router.push(`../event/${event.event_id}`)}
                 >
-                  <Text style={styles.eventTitle}>{event.title}</Text>
-                  <Text style={styles.eventDate}>{formatDate(event.date)}</Text>
+                  <Text style={styles.eventTitle}>{event?.title || 'İsimsiz Etkinlik'}</Text>
+                  <Text style={styles.eventDate}>{formatDate(event?.date)}</Text>
                 </TouchableOpacity>
               ))
             ) : (
@@ -171,7 +256,6 @@ export default function ProfileScreen() {
         )}
       </View>
 
-      {/* Accordion 2: Katıldığım Etkinlikler */}
       <View style={styles.accordionContainer}>
         <TouchableOpacity 
           style={styles.accordionHeader} 
@@ -187,16 +271,25 @@ export default function ProfileScreen() {
         {isJoinedOpen && (
           <View style={styles.accordionContent}>
             {joinedEvents.length > 0 ? (
-              joinedEvents.map((event: any) => (
-                <TouchableOpacity 
-                  key={event.event_id} 
-                  style={styles.eventItem}
-                  onPress={() => router.push(`/event/${event.event_id}`)}
-                >
-                  <Text style={styles.eventTitle}>{event.title}</Text>
-                  <Text style={styles.eventDate}>{formatDate(event.date)}</Text>
-                </TouchableOpacity>
-              ))
+              joinedEvents.map((event: any, index) => {
+                if (!event) return null; 
+                
+                // Güvenli değerler atayarak çöküşü (crash) %100 engelliyoruz
+                const eventId = event.event_id || `joined-${index}`;
+                const title = event.title || 'İsimsiz Etkinlik';
+                const date = event.date || '';
+
+                return (
+                  <TouchableOpacity 
+                    key={eventId} 
+                    style={styles.eventItem}
+                    onPress={() => router.push(`../event/${eventId}`)}
+                  >
+                    <Text style={styles.eventTitle}>{title}</Text>
+                    <Text style={styles.eventDate}>{formatDate(date)}</Text>
+                  </TouchableOpacity>
+                )
+              })
             ) : (
               <Text style={styles.emptyText}>Henüz hiçbir etkinliğe katılmadın.</Text>
             )}
@@ -204,13 +297,11 @@ export default function ProfileScreen() {
         )}
       </View>
 
-      {/* Çıkış Yap Butonu */}
       <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
         <Ionicons name="log-out-outline" size={22} color="#fff" style={{ marginRight: 8 }} />
         <Text style={styles.logoutText}>Çıkış Yap</Text>
       </TouchableOpacity>
 
-      {/* Hesabı Sil Butonu */}
       <TouchableOpacity style={styles.deleteButton} onPress={handleDeleteAccount}>
         <Ionicons name="trash-outline" size={22} color="#dc3545" style={{ marginRight: 8 }} />
         <Text style={styles.deleteText}>Hesabı Sil</Text>
@@ -235,6 +326,16 @@ const styles = StyleSheet.create({
   accordionTitle: { fontSize: 16, fontWeight: 'bold', color: '#333', marginLeft: 10 },
   accordionContent: { paddingHorizontal: 18, paddingBottom: 18, backgroundColor: '#fafafa', borderTopWidth: 1, borderTopColor: '#f0f0f0' },
   
+  bioTextContent: { fontSize: 15, color: '#444', lineHeight: 22, marginTop: 5 },
+  bioEditBtn: { flexDirection: 'row', alignItems: 'center', marginTop: 12, alignSelf: 'flex-start' },
+  bioEditText: { color: '#007bff', fontWeight: 'bold', marginLeft: 5 },
+  bioInput: { backgroundColor: '#fff', borderWidth: 1, borderColor: '#ddd', borderRadius: 8, padding: 10, minHeight: 80, textAlignVertical: 'top', fontSize: 15, color: '#333' },
+  bioActionRow: { flexDirection: 'row', justifyContent: 'flex-end', marginTop: 10 },
+  bioCancelBtn: { paddingVertical: 8, paddingHorizontal: 15, marginRight: 10 },
+  bioCancelText: { color: '#666', fontWeight: 'bold' },
+  bioSaveBtn: { backgroundColor: '#007bff', paddingVertical: 8, paddingHorizontal: 15, borderRadius: 8 },
+  bioSaveText: { color: '#fff', fontWeight: 'bold' },
+
   eventItem: { paddingVertical: 12, borderBottomWidth: 1, borderBottomColor: '#eee', flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
   eventTitle: { fontSize: 16, color: '#333', flex: 1 },
   eventDate: { fontSize: 14, color: '#888' },
@@ -243,7 +344,6 @@ const styles = StyleSheet.create({
   logoutButton: { flexDirection: 'row', backgroundColor: '#6c757d', marginHorizontal: 20, marginTop: 20, paddingVertical: 15, borderRadius: 12, justifyContent: 'center', alignItems: 'center', elevation: 2, shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.2, shadowRadius: 2 },
   logoutText: { color: '#fff', fontSize: 18, fontWeight: 'bold' },
 
-  // Yeni Hesabı Sil Butonu Stilleri
   deleteButton: { flexDirection: 'row', backgroundColor: 'transparent', marginHorizontal: 20, marginTop: 15, paddingVertical: 15, borderRadius: 12, justifyContent: 'center', alignItems: 'center', borderWidth: 1, borderColor: '#dc3545' },
   deleteText: { color: '#dc3545', fontSize: 18, fontWeight: 'bold' }
 });

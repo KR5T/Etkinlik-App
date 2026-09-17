@@ -35,3 +35,13 @@ Bu proje, "Spec-Driven Development" (Spesifikasyon Odaklı Geliştirme) yaklaş�
 * **Backend & Veritabanı:** Supabase (PostgreSQL)
 * **Güvenlik:** Row Level Security (RLS)
 * **Tasarım:** React Native StyleSheet, Ionicons
+
+## Veri Tabanı Görselleri
+* **Users Tablosu**
+![Etkinlik Oluşturma Ekranı](./assets/images/users.PNG)
+* **Attendees Tablosu**
+![Etkinlik Oluşturma Ekranı](./assets/images/attendees.PNG)
+* **Events Tablosu**
+![Etkinlik Oluşturma Ekranı](./assets/images/events.PNG)
+* **Invitations Tablosu**
+![Etkinlik Oluşturma Ekranı](./assets/images/event_invitations.PNG)
